@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import cv2 as cv
 import open3d as o3d
+import shutil
 
 
 def load_pickle(filename):
@@ -81,6 +82,7 @@ class read_data():
         输入一个subject的data的目录，把他的所有.p文件数据保存进一个字典
         '''
         self.root_dir = pfile_root_path
+        self.subject_name = pfile_root_path[-5:-1]
         self.dat = {}
 
     def load_files(self):
@@ -153,12 +155,41 @@ class read_data():
             print(f"data_type should choose from 0 or 1, instead of {data_type}! ")
             pass
 
+    def data_to_file(self, path):
+        '''
+        subject_name----pose_name------pressure_map\ 001.png, 002.png, ...
+                                    |
+                                    ------skeleton_annotation\ 001.mat, 002.mat, ...
+        '''
+        subject_dir = os.path.join(path, self.subject_name)
+
+        for key in self.dat.keys():
+            pose = os.path.join(subject_dir, key)
+            images = os.path.join(pose, 'pressure_map')
+            labels = os.path.join(pose, 'skeleton_annotations')
+
+            # Create directories for pressure_map and skeleton_annotation
+            os.makedirs(images, exist_ok=True)
+            os.makedirs(labels, exist_ok=True)
+
+            for frame in self.dat[key].keys():
+                pressure_map_path = os.path.join(images, f'{frame}.png')
+                skeleton_annotations_path = os.path.join(labels,  f'{frame}.mat')
+                print(pressure_map_path)
+                print(skeleton_annotations_path)
+                shutil.copy(np.array(self.dat[key][frame]['pressure_map']).reshape(64,27), pressure_map_path)
+                shutil.copy(self.dat[key][frame]['skeleton_annotations'], skeleton_annotations_path)
+
+
+
+
+
 
 if __name__ == "__main__":
     s1 = read_data("F:\dataset\pressure_mat_pose_data\subject_GF5Q3")
     s1.load_files()
     s1.data_info()
-    print(np.array(s1.dat['head.p'][0]['pressure_map']).resize(64,27))
+    s1.data_to_file(r'F:\dataset\pressure_mat_pose_data\dataset')
 
 
 
