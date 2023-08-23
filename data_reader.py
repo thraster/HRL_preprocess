@@ -7,6 +7,9 @@ import open3d as o3d
 import scipy.io
 
 def load_pickle(filename):
+    '''
+    加载.p文件
+    '''
     try:
         p = open(filename, 'rb')
     except IOError:
@@ -23,30 +26,10 @@ def load_pickle(filename):
     p.close()
     return picklelicious
 
-
-
-# def load_pickle(filename):
-#     '''
-#     Load a pickle with latin1 encoding.
-
-#     Parameters
-#     ----------
-#     filename : str
-#         Normalized file path of the the file that needs to be loaded.
-
-#     Returns
-#     -------
-#     obj : unpickled object
-#         The returned object after loading the pickle file.
-
-#     '''
-#     with open(filename, 'rb') as f:
-        
-#         obj = pkl.load(f, encoding='latin1')
-#         f.seek(0)
-#     return obj
-
 def all_files(my_dir):
+    '''
+    读取指定dir下所有的文件, 返回根目录和目录下的文件名
+    '''
     """
     Create a list of all files and directories inside a specified directory.
 
@@ -74,7 +57,9 @@ def all_files(my_dir):
     return path, filenames
 
 class read_data():
-
+    '''
+    HRL-ROS数据集的文件读取
+    '''
     def __init__(self, pfile_root_path) -> None:
         pass
         '''
