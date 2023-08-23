@@ -84,6 +84,7 @@ class read_data():
         self.subject_name = pfile_root_path[-5:]
         self.dat = {}
 
+    # 加载.p文件，存储进self.dat中
     def load_files(self):
         '''
         把一个subject的所有.p文件读进一个字典储存
@@ -113,6 +114,8 @@ class read_data():
         print(f"---------------------subject {path} loaded in self.dat!--------------------")
         print('\n')
 
+
+    # 展示self.dat文件的信息
     def data_info(self, pose = 'head.p', frame = 0):
         '''
         展示该subject的数据信息
@@ -122,6 +125,10 @@ class read_data():
         print(f"二级目录(某姿势下采集的帧数，默认为head.p)的键: \n{list(self.dat[pose].keys())[-1]}")
         print(f"三级目录(每一帧采集的数据类型)的键: \n{list(self.dat[pose][frame].keys())}")
 
+
+
+
+    # 可视化数据
     def data_viz(self, pose_type = 'head.p', frame = 0, data_type = 0):
         '''
         pose_type - 加载好的不同姿势下采集的文件保存在同一个字典中，选择指定的姿势
@@ -154,6 +161,8 @@ class read_data():
             print(f"data_type should choose from 0 or 1, instead of {data_type}! ")
             pass
 
+
+    # 把.p文件输出为pressure map和skeleton annotation
     def data_to_file(self, path):
         '''
         subject_name----pose_name------pressure_map\ 001.png, 002.png, ...
@@ -170,13 +179,14 @@ class read_data():
             # Create directories for pressure_map and skeleton_annotation
             os.makedirs(images, exist_ok=True)
             os.makedirs(labels, exist_ok=True)
-
+            print(f"current pose: {key}, save to...")
+            print(images)
+            print(labels)
             for frame in self.dat[key].keys():
                 pressure_map_path = os.path.join(images, f'{frame}.png')
                 skeleton_annotations_path = os.path.join(labels,  f'{frame}.mat')
-                print(f"current pose: {key}, save to...")
-                print(pressure_map_path)
-                print(skeleton_annotations_path)
+                
+                
                 # print(np.array(self.dat[key][frame]['pressure_map']).reshape(64,27))
                 # print(self.dat[key][frame]['skeleton_annotations'])
                   # Save pressure_map as .png
@@ -187,7 +197,7 @@ class read_data():
                 annotations_dict = {'data': self.dat[key][frame]['skeleton_annotations']}
                 scipy.io.savemat(skeleton_annotations_path, annotations_dict)
 
-
+    # 对self.dat中的pressure map进行预处理
     def data_preprocess(self, model = 0):
         '''
         将pressure map进行预处理
@@ -216,14 +226,15 @@ class read_data():
 
 
 if __name__ == "__main__":
-    s1 = read_data("F:\dataset\pressure_mat_pose_data\subject_GF5Q3")
-    s1.load_files()
-    s1.data_info()
+
+    # s1 = read_data("F:\dataset\pressure_mat_pose_data\subject_GF5Q3")
+    # s1.load_files()
+    # s1.data_info()
     
 
-    s1.data_preprocess(1)
-    s1.data_viz()
-    s1.data_to_file("F:\\dataset\\pressure_mat_pose_data\\dataset")
+    # s1.data_preprocess(1)
+    # s1.data_viz()
+    # s1.data_to_file("F:\\dataset\\pressure_mat_pose_data\\dataset")
 
 
 
@@ -250,13 +261,15 @@ if __name__ == "__main__":
             try:
                 s = read_data(subject)
                 s.load_files()
-                s.dat
+                s.data_to_file(r'F:\dataset\pressure_mat_pose_data\dataset')
             except:
                 print('遇到了错误! 执行下一个subject')
                 i += 1
                 error_folder.append(subject)
                 pass
-
+        
         print(f"total subjects = {len(subjects)}, loading errors = {i}")
         print(error_folder)
         print(subjects)
+
+    traverse()
