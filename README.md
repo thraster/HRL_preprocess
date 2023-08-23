@@ -1,3 +1,8 @@
+
+This is a code about editing the HRL-ROS dataset for future exploration.
+
+-------------------------------------
+
 Data published publicly online by Henry M. Clever 06/2018
 Email: henryclever@gatech.edu
 
