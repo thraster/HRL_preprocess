@@ -80,9 +80,17 @@ class read_data():
         '''
         输入一个subject的data的目录，把他的所有.p文件数据保存进一个字典
         '''
-        self.root_dir = pfile_root_path
-        self.subject_name = pfile_root_path[-5:]
-        self.dat = {}
+        self.root_dir = pfile_root_path           # 存储一个subject的根目录
+        self.subject_name = pfile_root_path[-5:]  # 存储该subject的名字
+        self.error_files = []                     # 保存.p文件加载时出错的文件名
+        self.dat = {}                             # 申明用于存储该subject所有数据的字典
+        '''
+        字典的组织格式：dict['filename']['current_frame']----['pressure_map']
+                                                         |
+                                                         ---['skeleton_annotations']
+                                                         |
+                                                         ---['other']
+        '''
 
     # 加载.p文件，存储进self.dat中
     def load_files(self):
@@ -102,14 +110,22 @@ class read_data():
         self.dat = dict({el:{} for el in filenames})
         for file in filenames:
             print(f"processing {file}...")
-            p_file = load_pickle(path+'\\'+file)
-            self.dat[file] = dict({i:{} for i in range(len(p_file))})
-            for i in range(len(p_file)):
-                # i = str(i)
-                # self.dat[file][i] = 
-                self.dat[file][i]['pressure_map'] = p_file[i][0]
-                self.dat[file][i]['skeleton_annotations'] = p_file[i][1]
-                self.dat[file][i]['other'] = p_file[i][2]
+            try:
+                p_file = load_pickle(path+'\\'+file)
+                self.dat[file] = dict({i:{} for i in range(len(p_file))})
+                for i in range(len(p_file)):
+                    # i = str(i)
+                    # self.dat[file][i] = 
+                    self.dat[file][i]['pressure_map'] = p_file[i][0]
+                    self.dat[file][i]['skeleton_annotations'] = p_file[i][1]
+                    self.dat[file][i]['other'] = p_file[i][2]
+            except:
+                # 加载.p文件时不知道为什么某些.p文件会出错， 所以加入了这段代码...
+                # 用于存储出错的.p文件名，并跳过、处理下一个.p文件
+                self.error_files.append(self.subject_name + '_' + file) # 存储出错的文件名
+                print(f"encountered with errors when processing {file}, proceed to next .p file.")
+                pass
+
         print('\n')
         print(f"---------------------subject {path} loaded in self.dat!--------------------")
         print('\n')
@@ -244,6 +260,7 @@ if __name__ == "__main__":
 
 
     def traverse():
+        errors = []
         subjects = []
         for root, dirnames, filenames in os.walk(f'F:\dataset\pressure_mat_pose_data'):
             # print(root)
@@ -255,21 +272,20 @@ if __name__ == "__main__":
                     subjects.append(root+'\\'+dirname)
             break
         print(subjects)
-        error_folder = []
+
         i = 0
         for subject in subjects:
-            try:
-                s = read_data(subject)
-                s.load_files()
-                s.data_to_file(r'F:\dataset\pressure_mat_pose_data\dataset')
-            except:
-                print('遇到了错误! 执行下一个subject')
-                i += 1
-                error_folder.append(subject)
-                pass
-        
+            s = read_data(subject)
+            s.load_files()
+            s.data_to_file(r'F:\dataset\pressure_mat_pose_data\dataset')
+            if s.error_files != []:
+                errors.append(s.error_files)
+
+
         print(f"total subjects = {len(subjects)}, loading errors = {i}")
-        print(error_folder)
+        # print(error_folder)
         print(subjects)
+        print(f".p files encountered errors when loading:\n {errors}")
+
 
     traverse()
